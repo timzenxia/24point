@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>24-Game Solver</title>
+  <style>
+    body {
+      background: #f2f2f2;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      margin: 30px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #444;
+      margin-bottom: 20px;
+    }
+
+    .container {
+      max-width: 450px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .description {
+      margin-bottom: 15px;
+      color: #555;
+    }
+
+    .input-group {
+      display: flex;
+      justify-content: space-between;
+      margin: 10px 0;
+    }
+
+    .input-group label {
+      flex: 1;
+      margin-right: 10px;
+      font-weight: bold;
+    }
+
+    .input-group input {
+      flex: 2;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      cursor: pointer;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      background-color: #4285f4;
+      color: #fff;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #3072e6;
+    }
+
+    #results {
+      margin-top: 20px;
+    }
+
+    .solution-container {
+      background: #f9f9f9;
+      padding: 10px 15px;
+      border-radius: 4px;
+      max-height: 200px;  /* scrollable area */
+      overflow-y: auto;
+      box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .solution-count {
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    .solution {
+      margin-bottom: 5px;
+      line-height: 1.5em;
+    }
+
+    .no-solution {
+      color: #d33;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>24-Game Solver</h1>
+  <p class="description">
+    Please enter four numbers (integer or float). Click "Calculate" to see if there is any way to form 24 using +, −, ×, ÷, and parentheses.
+  </p>
+
+  <div class="input-group">
+    <label for="num1">Number 1</label>
+    <input id="num1" type="text" placeholder="num1" />
+  </div>
+  <div class="input-group">
+    <label for="num2">Number 2</label>
+    <input id="num2" type="text" placeholder="num2" />
+  </div>
+  <div class="input-group">
+    <label for="num3">Number 3</label>
+    <input id="num3" type="text" placeholder="num3" />
+  </div>
+  <div class="input-group">
+    <label for="num4">Number 4</label>
+    <input id="num4" type="text" placeholder="num4" />
+  </div>
+
+  <button onclick="onCalculateClick()">Calculate</button>
+
+  <div id="results"></div>
+</div>
+
+<script>
+/**
+ * Core function to find all expressions that evaluate to 24.
+ * @param {number[]} nums - An array of 4 numbers.
+ * @returns {string[]} - A list of valid expression strings that result in 24.
+ */
+function solve24(nums) {
+  const results = new Set();
+
+  function search(arr) {
+    if (arr.length === 1) {
+      const [val, expr] = arr[0];
+      if (Math.abs(val - 24) < 1e-6) {
+        results.add(expr);
+      }
+      return;
+    }
+
+    for (let i = 0; i < arr.length; i++) {
+      for (let j = i + 1; j < arr.length; j++) {
+        const [val1, expr1] = arr[i];
+        const [val2, expr2] = arr[j];
+
+        // Create a new array excluding the picked elements
+        const newArr = [];
+        for (let k = 0; k < arr.length; k++) {
+          if (k !== i && k !== j) {
+            newArr.push(arr[k]);
+          }
+        }
+
+        // Generate candidates for val1 & val2
+        const candidates = [];
+        // Addition
+        candidates.push([val1 + val2, `(${expr1}+${expr2})`]);
+        // Subtraction (both orders)
+        candidates.push([val1 - val2, `(${expr1}-${expr2})`]);
+        candidates.push([val2 - val1, `(${expr2}-${expr1})`]);
+        // Multiplication
+        candidates.push([val1 * val2, `(${expr1}*${expr2})`]);
+        // Division (both orders, avoiding division by zero)
+        if (Math.abs(val2) > 1e-9) {
+          candidates.push([val1 / val2, `(${expr1}/${expr2})`]);
+        }
+        if (Math.abs(val1) > 1e-9) {
+          candidates.push([val2 / val1, `(${expr2}/${expr1})`]);
+        }
+
+        // Recurse with the new values
+        for (const [val, expr] of candidates) {
+          newArr.push([val, expr]);
+          search(newArr);
+          newArr.pop();
+        }
+      }
+    }
+  }
+
+  // Generate permutations of the 4 numbers
+  function permutations(arr) {
+    if (arr.length <= 1) return [arr];
+    const result = [];
+    for (let i = 0; i < arr.length; i++) {
+      const first = arr[i];
+      const rest = arr.slice(0, i).concat(arr.slice(i + 1));
+      for (const perm of permutations(rest)) {
+        result.push([first, ...perm]);
+      }
+    }
+    return result;
+  }
+
+  const allPerms = permutations(nums);
+  for (const perm of allPerms) {
+    const startArr = perm.map(num => [num, num.toString()]);
+    search(startArr);
+  }
+
+  return Array.from(results);
+}
+
+/**
+ * Called when the user clicks the "Calculate" button.
+ */
+function onCalculateClick() {
+  const num1 = parseFloat(document.getElementById('num1').value);
+  const num2 = parseFloat(document.getElementById('num2').value);
+  const num3 = parseFloat(document.getElementById('num3').value);
+  const num4 = parseFloat(document.getElementById('num4').value);
+
+  const resultsDiv = document.getElementById('results');
+  resultsDiv.innerHTML = ''; // Clear previous results
+
+  // Validate user input
+  if (isNaN(num1) || isNaN(num2) || isNaN(num3) || isNaN(num4)) {
+    resultsDiv.innerHTML = '<p class="no-solution">Please enter four valid numbers.</p>';
+    return;
+  }
+
+  // Solve for 24
+  const solutions = solve24([num1, num2, num3, num4]);
+  if (solutions.length === 0) {
+    resultsDiv.innerHTML = '<p class="no-solution">No solutions found.</p>';
+  } else {
+    const solutionContainer = document.createElement('div');
+    solutionContainer.className = 'solution-container';
+
+    const countP = document.createElement('p');
+    countP.className = 'solution-count';
+    countP.textContent = `Found ${solutions.length} solution(s):`;
+    solutionContainer.appendChild(countP);
+
+    solutions.forEach((expr, idx) => {
+      const p = document.createElement('p');
+      p.className = 'solution';
+      p.innerText = `${idx + 1}. ${expr}`;
+      solutionContainer.appendChild(p);
+    });
+
+    resultsDiv.appendChild(solutionContainer);
+  }
+}
+</script>
+</body>
+</html>
