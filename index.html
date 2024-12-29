@@ -3,19 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <title>24-Game Solver</title>
+  <!-- 让移动端使用设备宽度进行渲染，避免缩放异常 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <style>
+    /* ========== 基础样式 ========== */
     body {
       background: #f2f2f2;
       font-family: 'Helvetica Neue', Arial, sans-serif;
-      margin: 30px;
+      margin: 30px;  /* 桌面端留出些许边距 */
     }
-
     h1 {
       text-align: center;
       color: #444;
       margin-bottom: 20px;
     }
-
     .container {
       max-width: 450px;
       margin: 0 auto;
@@ -24,24 +26,20 @@
       border-radius: 8px;
       box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
     }
-
     .description {
       margin-bottom: 15px;
       color: #555;
     }
-
     .input-group {
       display: flex;
       justify-content: space-between;
       margin: 10px 0;
     }
-
     .input-group label {
       flex: 1;
       margin-right: 10px;
       font-weight: bold;
     }
-
     .input-group input {
       flex: 2;
       padding: 8px;
@@ -49,7 +47,6 @@
       border-radius: 4px;
       text-align: center;
     }
-
     button {
       width: 100%;
       padding: 12px;
@@ -62,15 +59,12 @@
       color: #fff;
       transition: background-color 0.3s;
     }
-
     button:hover {
       background-color: #3072e6;
     }
-
     #results {
       margin-top: 20px;
     }
-
     .solution-container {
       background: #f9f9f9;
       padding: 10px 15px;
@@ -79,20 +73,42 @@
       overflow-y: auto;
       box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.1);
     }
-
     .solution-count {
       margin-bottom: 10px;
       font-weight: bold;
     }
-
     .solution {
       margin-bottom: 5px;
       line-height: 1.5em;
     }
-
     .no-solution {
       color: #d33;
       font-weight: bold;
+    }
+
+    /* ========== 响应式：在小屏（<=600px）下的布局调整 ========== */
+    @media (max-width: 600px) {
+      /* 减少身体边距，避免过度浪费小屏空间 */
+      body {
+        margin: 10px;
+      }
+      /* 容器 padding 调整小一些 */
+      .container {
+        padding: 15px;
+      }
+      /* label 与 input 垂直排列，提高可点击性 */
+      .input-group {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .input-group label {
+        margin-bottom: 5px;
+        margin-right: 0;
+      }
+      .input-group input {
+        flex: 1;
+        margin-bottom: 10px;
+      }
     }
   </style>
 </head>
@@ -104,6 +120,7 @@
     Please enter four numbers (integer or float). Click "Calculate" to see if there is any way to form 24 using +, −, ×, ÷, and parentheses.
   </p>
 
+  <!-- 输入框区域 -->
   <div class="input-group">
     <label for="num1">Number 1</label>
     <input id="num1" type="text" placeholder="num1" />
@@ -121,8 +138,10 @@
     <input id="num4" type="text" placeholder="num4" />
   </div>
 
+  <!-- 计算按钮 -->
   <button onclick="onCalculateClick()">Calculate</button>
 
+  <!-- 结果输出区域 -->
   <div id="results"></div>
 </div>
 
